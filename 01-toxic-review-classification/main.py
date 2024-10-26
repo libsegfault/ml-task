@@ -1,8 +1,8 @@
 import argparse
 from pathlib import Path
 
-from cmnt_clf.data import load_dataset, prepare, save_dataset
-from cmnt_clf.models import classifier
+from toxic_clf.data import load_dataset, prepare, save_dataset
+from toxic_clf.models import classifier
 
 
 def main():
@@ -12,6 +12,7 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.set_defaults(func=lambda args: parser.print_help())
     subparsers = parser.add_subparsers(dest='cmd')
 
     default_data_path = Path('./prepared-dataset')
