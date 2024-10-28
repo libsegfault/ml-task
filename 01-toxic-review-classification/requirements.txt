@@ -1,2 +1,5 @@
 datasets==2.20.0
 evaluate==0.4.2
+sklearn_pandas
+transformers
+accelerate
