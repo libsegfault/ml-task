@@ -1,9 +1,10 @@
 import argparse
 from pathlib import Path
 
-from funccraft.data import load_dataset, prepare, save_dataset
-from funccraft.models import predict
+import datasets
 
+from funccraft.data import load_dataset, prepare, save_dataset
+from funccraft.models import append_extra_id, predict
 
 def main():
     args = parse_args()
@@ -24,6 +25,19 @@ def parse_args():
         type=Path,
         default=default_data_path,
     )
+    prepare_data_parser.add_argument(
+        '-n',
+        '--num',
+        help='Limit dataset to first --num functions',
+        type=int,
+        default=1000
+    )
+    prepare_data_parser.add_argument(
+        '-l',
+        '--language',
+        help='Language (go|python)',
+        default='python',
+    )
 
     predict_parser = subparsers.add_parser('predict-names')
     predict_parser.set_defaults(func=predict_names)
@@ -39,19 +53,48 @@ def parse_args():
         '--model',
         default='Salesforce/codet5p-220m',
     )
-
+    predict_parser.add_argument(
+        '-n',
+        '--num',
+        help='Limit dataset to first --num functions',
+        type=int,
+        default=1000
+    )
+    predict_parser.add_argument(
+        '-l',
+        '--language',
+        help='Language (go|python)',
+        default='python',
+    )
+    predict_parser.add_argument(
+        '-c',
+        '--comments',
+        help='Use comments in predictions',
+        type=bool,
+        default=False
+    )
     return parser.parse_args()
 
 
 def prepare_data(args):
-    dataset = prepare()
+    dataset = datasets.load_dataset(
+        'code_search_net',
+        args.language,
+        split='test',
+        trust_remote_code=True
+    )
+    dataset = dataset.select(range(args.num))
+    dataset = datasets.Dataset.from_list([prepare(x, args.language) for x in dataset])
     save_dataset(dataset, args.output)
 
 
 def predict_names(args):
     dataset = load_dataset(args.dataset)
-    predict(dataset, args.model)
+    dataset = dataset.select(range(args.num))
 
+    src = 'my_body' if args.comments else 'my_no_comm'
+    dataset = datasets.Dataset.from_list([append_extra_id(x, args.language) for x in dataset])
+    predict(dataset, src, args.model)
 
 if __name__ == '__main__':
     main()

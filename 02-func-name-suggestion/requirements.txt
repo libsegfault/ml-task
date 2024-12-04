@@ -1,7 +1,8 @@
-tree-sitter==0.22.3
-tree-sitter-python==0.21.0
-datasets==2.20.0
-evaluate==0.4.2
-rouge_score==0.1.2
-torch==2.5.1
-transformers==4.46.2
+tree-sitter
+tree-sitter-python
+tree-sitter-language-pack
+datasets
+evaluate
+rouge_score
+torch
+transformers
